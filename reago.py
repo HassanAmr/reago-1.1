@@ -718,18 +718,18 @@ def draw_graph(graph, filename):
 
 
 def print_help_info():
-    print "-----------------------------------------------------"
-    print "Usage: python reago.py filename.fasta output_dir -l READ_LENGTH"
-    print "Optional parameters:"
-    print "-o OVERLAP, default 0.8"
-    print "-e ERROR_CORRECTION_THRESHOLD, default 0.05"
-    print "-t TIP_SIZE, default 30"
-    print "-b PATH_FINDING_PARAMETER, default 10"
-    print "Dependencies:"
-    print "1. Readjoiner 1.2"
-    print "2. Infernal 1.1.1"
-    print "-----------------------------------------------------"
-    sys.exit(1)
+    print ("-----------------------------------------------------")
+    print ("Usage: python reago.py filename.fasta output_dir -l READ_LENGTH")
+    print ("Optional parameters:")
+    print ("-o OVERLAP, default 0.8")
+    print ("-e ERROR_CORRECTION_THRESHOLD, default 0.05")
+    print ("-t TIP_SIZE, default 30")
+    print ("-b PATH_FINDING_PARAMETER, default 10")
+    print ("Dependencies:")
+    print ("1. Readjoiner 1.2")
+    print ("2. Infernal 1.1.1")
+    print ("-----------------------------------------------------")
+
 
 
 
@@ -745,6 +745,7 @@ arg_range = {"-l" : [1, float("inf"), None], \
 args = sys.argv
 if len(args) < 4:
     print_help_info()
+    sys.exit(0)
 
 filename = args[1]
 output_dir = args[2]
@@ -752,26 +753,30 @@ if output_dir[-1] != "/":
     output_dir += "/"
 
 if os.path.exists(filename) == False:
-    print "Error: File", "\'" + filename + "\'", "doesn't exist."
+    print ("Error: File", "\'" + filename + "\'", "doesn't exist.")
     print_help_info()
+    sys.exit(1)
 
 for idx in range(3, len(args) - 1, 2):
     arg, val = args[idx], float(args[idx+1])
     if arg not in arg_range:
-        print "Error - Invalid arg:", arg
+        print ("Error - Invalid arg:", arg)
         print_help_info()
+        sys.exit(1)
 
     min_val, max_val = arg_range[arg][:2]
     if val < min_val or val >= max_val:
-        print "Error: Invalid value for", arg
-        print "valid range:", "[" + str(min_val) + ", " + str(max_val) + ")"
+        print ("Error: Invalid value for", arg)
+        print ("valid range:", "[" + str(min_val) + ", " + str(max_val) + ")")
         print_help_info()
+        sys.exit(1)
     else:
         arg_range[arg][2] = val
 
 if arg_range["-l"][2] == None:
-    print "Error: read length is required"
+    print ("Error: read length is required")
     print_help_info()
+    sys.exit(1)
 
 MIN_OVERLAP = int(arg_range["-l"][2] * arg_range["-o"][2])
 READ_LEN = int(arg_range["-l"][2])
@@ -788,7 +793,7 @@ full_genes_path = output_dir + "full_genes.fasta"
 fragments_path = output_dir + "fragments.fasta"
 
 if os.path.exists(filename) == False:
-    print "Error: File", "\'" + filename + "\'", "doesn't exist."
+    print ("Error: File", "\'" + filename + "\'", "doesn't exist.")
     sys.exit(1)
 
 if os.path.exists(output_dir) == False:
@@ -799,24 +804,24 @@ if os.path.exists(rj_dir) == False:
 
 
 ##### main procedure starts
-print timestamp(), "REAGO (v1.10) started..."
-print "Input file:", filename
-print "Parameters:"
+print (timestamp(), "REAGO (v1.10) started...")
+print ("Input file:", filename)
+print ("Parameters:")
 for arg in arg_range:
-    print arg, arg_range[arg][2]
+    print (arg, arg_range[arg][2])
 
-print timestamp(), "Reading input file..."
+print (timestamp(), "Reading input file...")
 read_db, r_pos, cm_pos = get_fa(filename)
 read_db_original = dict(read_db)
 read_position_db = initialize_read_pos(read_db)
 read_db = combine_duplicated_reads(read_db)
 
 
-print timestamp(), "Initializing overlap graph..."
+print (timestamp(), "Initializing overlap graph...")
 G = create_graph_using_rj(read_db, "graph")
 subgraphs = nx.weakly_connected_component_subgraphs(G)
 
-print timestamp(), "Recovering 16S rRNAs..."
+print (timestamp(), "Recovering 16S rRNAs...")
 full_genes = []
 scaffold_candidates = []
 for subgraph in subgraphs:
@@ -838,16 +843,16 @@ for subgraph in subgraphs:
     full_genes += full
     scaffold_candidates += scaf
 
-print timestamp(), "Scaffolding on short 16S rRNA segments..."
+print (timestamp(), "Scaffolding on short 16S rRNA segments...")
 scaf, remaining = scaffold(scaffold_candidates)
 full_genes += scaf
 
-print timestamp(), "Write to Files..."
+print (timestamp(), "Write to Files...")
 write_gene(full_genes)
 write_frag(remaining)
 
 
-print timestamp(), "Done."
-print "- Number of 16S rRNAs:", len(full_genes)
-print "- Full genes:", full_genes_path
-print "- Gene fragments:", fragments_path
+print (timestamp(), "Done.")
+print ("- Number of 16S rRNAs:", len(full_genes))
+print ("- Full genes:", full_genes_path)
+print ("- Gene fragments:", fragments_path)
